@@ -9,6 +9,7 @@ import PurchaseLogs from './components/PurchaseLogs';
 import MenuAdmin from './components/MenuAdmin';
 import MoreMenu from './components/MoreMenu';
 import Toast from './components/Toast';
+import UpdateManager from './components/UpdateManager';
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/more" element={<MoreMenu />} />
           </Routes>
           <Toast />
+          <UpdateManager />
         </main>
       </div>
     </BrowserRouter>
