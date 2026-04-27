@@ -1,17 +1,6 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
-import { MENU_ITEMS } from '../data/menu';
-
-const SALES_ORDER = [
-  "sisig", "sisig-egg", "pizza", "b1t1-hamb", "b1t1-cheese", "b1t1-hamw", "bacon-egg", "cheese-bacon", 
-  "bacon-sandwich", "chilidog", "b1t1-makh", "b1t1-cheesy-footlong", 
-  "superlong", "egg-sandwich", 
-  "egg-sandwich-cheese", "supreme-overload", "b1t1-super", 
-  "k-burger", "k-hotdog", "footlong-overload", "hungarian",
-  "siopao", "add-egg", "add-cheese", "add-bacon",
-  "bev-coke-mismo", "bev-royal-mismo", "bev-sprite-mismo", 
-  "bev-wilkins-500", "bev-nutrichoco", "bev-minutemaid"
-];
+import { MENU_ITEMS, SALES_ORDER } from '../data/menu';
 
 export default function SalesReport() {
   const { itemsSold = {}, dailySales, menuItems } = useStore();

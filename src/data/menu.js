@@ -112,3 +112,14 @@ export const MENU_CATEGORIES = [
     ]
   }
 ];
+
+export const SALES_ORDER = [
+  "b1t1-hamb", "b1t1-cheese", "b1t1-hamw", "bacon-egg", "cheese-bacon", 
+  "bacon-sandwich", "chilidog", "b1t1-makh", "b1t1-cheesy-footlong", 
+  "superlong", "sisig", "sisig-egg", "pizza", "egg-sandwich", 
+  "egg-sandwich-cheese", "supreme-overload", "b1t1-super", 
+  "k-burger", "k-hotdog", "footlong-overload", "hungarian",
+  "siopao", "add-egg", "add-cheese", "add-bacon",
+  "bev-coke-mismo", "bev-royal-mismo", "bev-sprite-mismo", 
+  "bev-wilkins-500", "bev-nutrichoco", "bev-minutemaid"
+];

@@ -44,7 +44,7 @@ export const INVENTORY_CATEGORIES = [
   {
     id: "addons",
     title: "Add ons",
-    items: ["egg", "cheese", "bacon"]
+    items: ["egg", "cheese"]
   },
   {
     id: "bread",

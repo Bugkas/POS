@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { INGREDIENT_NAMES, INVENTORY_CATEGORIES } from '../data/ingredients';
-import { MENU_ITEMS } from '../data/menu';
+import { MENU_ITEMS, SALES_ORDER } from '../data/menu';
 import { LogOut, Download } from 'lucide-react';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
@@ -29,7 +29,17 @@ export default function ManagerReport() {
 
     csv += "PRODUCTS SOLD\n";
     csv += "Item,Quantity,Total Revenue\n";
-    Object.entries(itemsSold).forEach(([key, qty]) => {
+    
+    const sortedItems = Object.entries(itemsSold)
+      .sort((a, b) => {
+        const indexA = SALES_ORDER.indexOf(a[0]);
+        const indexB = SALES_ORDER.indexOf(b[0]);
+        const posA = indexA === -1 ? 999 : indexA;
+        const posB = indexB === -1 ? 999 : indexB;
+        return posA - posB;
+      });
+
+    sortedItems.forEach(([key, qty]) => {
       const item = menuItems[key];
       const name = item?.display || key;
       const total = (item?.price || 0) * qty;
@@ -38,13 +48,16 @@ export default function ManagerReport() {
     csv += "\n";
 
     csv += "INVENTORY STATUS\n";
-    csv += "Ingredient,Opening Stock,Closing Stock,Current Stock\n";
+    csv += "Category,Ingredient,Opening Stock,Closing Stock,Sold,Current Stock\n";
     
-    INGREDIENT_NAMES.forEach(ing => {
-      const open = openingInventory?.[ing] ?? "Not Set";
-      const close = closingInventory?.[ing] ?? "Not Set";
-      const current = inventory[ing] || 0;
-      csv += `"${ing}",${open},${close},${current}\n`;
+    INVENTORY_CATEGORIES.forEach(category => {
+      category.items.forEach(ing => {
+        const open = openingInventory?.[ing] ?? 0;
+        const close = closingInventory?.[ing] ?? 0;
+        const sold = (openingInventory && closingInventory) ? (open - close) : 0;
+        const current = inventory[ing] || 0;
+        csv += `"${category.title}","${ing}",${open},${close},${sold},${current}\n`;
+      });
     });
 
     const fileName = `DailyReport_${new Date().toISOString().split('T')[0]}.csv`;
@@ -139,9 +152,14 @@ export default function ManagerReport() {
               <div className="inventory-grid">
                 {category.items.map(ingredient => {
                   const currentStock = inventory[ingredient] || 0;
+                  const open = openingInventory?.[ingredient];
+                  const close = closingInventory?.[ingredient];
+                  const sold = (open !== undefined && close !== undefined) ? (open - close) : null;
+
                   return (
                     <div key={ingredient} className="report-inventory-item">
                       <span className="ingredient-name">{ingredient}</span>
+                      {sold !== null && <span className="sold-count">Sold: {sold}</span>}
                       <span className={`stock-count ${currentStock <= 10 ? 'critical' : ''}`}>
                         {currentStock}
                       </span>

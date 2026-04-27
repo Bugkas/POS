@@ -22,6 +22,101 @@ export const useStore = create(
       menuItems: MENU_ITEMS,
       foodCommissionRate: 0.15,
       bevCommissionRate: 0.05,
+      cart: [],
+      
+      addToCart: (itemKey, quantity) => {
+        set((state) => {
+          const existingItemIndex = state.cart.findIndex(item => item.itemKey === itemKey);
+          
+          if (existingItemIndex !== -1) {
+            // Combine with existing item
+            const newCart = [...state.cart];
+            newCart[existingItemIndex] = {
+              ...newCart[existingItemIndex],
+              quantity: newCart[existingItemIndex].quantity + quantity
+            };
+            return { cart: newCart };
+          } else {
+            // Add as new item
+            return {
+              cart: [...state.cart, { itemKey, quantity, id: Date.now() + Math.random() }]
+            };
+          }
+        });
+      },
+
+      updateCartQuantity: (id, newQuantity) => {
+        set((state) => {
+          if (newQuantity <= 0) {
+            return { cart: state.cart.filter(item => item.id !== id) };
+          }
+          return {
+            cart: state.cart.map(item => 
+              item.id === id ? { ...item, quantity: newQuantity } : item
+            )
+          };
+        });
+      },
+
+      removeFromCart: (id) => {
+        set((state) => ({
+          cart: state.cart.filter(item => item.id !== id)
+        }));
+      },
+
+      clearCart: () => {
+        set({ cart: [] });
+      },
+
+      checkout: () => {
+        set((state) => {
+          if (state.cart.length === 0) return state;
+
+          const newInventory = { ...state.inventory };
+          const newItemsSold = { ...state.itemsSold };
+          let addedSales = 0;
+          let addedCommission = 0;
+          const newTransactions = [];
+
+          state.cart.forEach((cartItem) => {
+            const item = state.menuItems[cartItem.itemKey];
+            if (!item) return;
+
+            // Deduct from inventory
+            Object.entries(item.deduct).forEach(([ingredient, amount]) => {
+              newInventory[ingredient] = (newInventory[ingredient] || 0) - (amount * cartItem.quantity);
+            });
+
+            // Update items sold
+            newItemsSold[cartItem.itemKey] = (newItemsSold[cartItem.itemKey] || 0) + cartItem.quantity;
+
+            const total = item.price * cartItem.quantity;
+            const rate = isBeverage(cartItem.itemKey) ? state.bevCommissionRate : state.foodCommissionRate;
+            const commission = total * rate;
+
+            addedSales += total;
+            addedCommission += commission;
+
+            newTransactions.push({
+              id: Date.now() + Math.random(),
+              timestamp: new Date().toISOString(),
+              itemKey: cartItem.itemKey,
+              quantity: cartItem.quantity,
+              total,
+              commission
+            });
+          });
+
+          return {
+            inventory: newInventory,
+            dailySales: state.dailySales + addedSales,
+            itemsSold: newItemsSold,
+            transactions: [...state.transactions, ...newTransactions],
+            totalCommission: state.totalCommission + addedCommission,
+            cart: [] // Clear cart after checkout
+          };
+        });
+      },
       
       updateCommissionRates: (foodRate, bevRate) => {
         set((state) => {
