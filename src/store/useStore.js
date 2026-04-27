@@ -78,6 +78,8 @@ export const useStore = create(
           let addedCommission = 0;
           const newTransactions = [];
 
+          const checkoutTimestamp = new Date().toISOString();
+
           state.cart.forEach((cartItem) => {
             const item = state.menuItems[cartItem.itemKey];
             if (!item) return;
@@ -99,7 +101,7 @@ export const useStore = create(
 
             newTransactions.push({
               id: Date.now() + Math.random(),
-              timestamp: new Date().toISOString(),
+              timestamp: checkoutTimestamp,
               itemKey: cartItem.itemKey,
               quantity: cartItem.quantity,
               total,

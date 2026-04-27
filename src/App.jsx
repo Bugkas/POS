@@ -8,6 +8,7 @@ import SalesReport from './components/SalesReport';
 import PurchaseLogs from './components/PurchaseLogs';
 import MenuAdmin from './components/MenuAdmin';
 import MoreMenu from './components/MoreMenu';
+import UpdateCheck from './components/UpdateCheck';
 import Toast from './components/Toast';
 import UpdateManager from './components/UpdateManager';
 
@@ -42,6 +43,7 @@ function App() {
             <Route path="/report" element={<ManagerReport />} />
             <Route path="/settings" element={<MenuAdmin />} />
             <Route path="/more" element={<MoreMenu />} />
+            <Route path="/updates" element={<UpdateCheck />} />
           </Routes>
           <Toast />
           <UpdateManager />

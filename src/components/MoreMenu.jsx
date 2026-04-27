@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FileText, History, Settings, ChevronRight } from 'lucide-react';
+import { FileText, History, Settings, ChevronRight, RefreshCw } from 'lucide-react';
 
 export default function MoreMenu() {
   const menuItems = [
@@ -21,6 +21,12 @@ export default function MoreMenu() {
       icon: <Settings size={24} />,
       title: "Menu & Settings",
       subtitle: "Prices and commission rates"
+    },
+    {
+      to: "/updates",
+      icon: <RefreshCw size={24} />,
+      title: "App Updates",
+      subtitle: "Check and install OTA updates"
     }
   ];
 

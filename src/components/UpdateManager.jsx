@@ -19,13 +19,14 @@ const UpdateManager = () => {
         if (!status.connected) return;
 
         // 3. Check for updates silently
-        const update = await CapacitorUpdater.check();
+        const current = await CapacitorUpdater.current();
+        const latest = await CapacitorUpdater.getLatest({ channel: 'production' });
         
-        if (update && update.url) {
+        if (latest && latest.url && current.version !== latest.version) {
           // 4. Download the update in the background
           const bundle = await CapacitorUpdater.download({
-            url: update.url,
-            version: update.version,
+            url: latest.url,
+            version: latest.version,
           });
           
           if (bundle) {
@@ -42,13 +43,18 @@ const UpdateManager = () => {
     initializeUpdateLogic();
 
     // Also listen for any updates downloaded in the background (if configured elsewhere)
-    const listener = CapacitorUpdater.addListener('updateDownloaded', (bundle) => {
+    let listenerHandle = null;
+    
+    // Resolve the promise to safely store the handle
+    CapacitorUpdater.addListener('updateDownloaded', (bundle) => {
       setDownloadedBundle(bundle);
       setShowUpdateModal(true);
+    }).then((handle) => {
+      listenerHandle = handle;
     });
 
     return () => {
-      listener.remove();
+      if (listenerHandle) listenerHandle.remove();
     };
   }, []);
 
