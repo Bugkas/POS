@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import { Network } from '@capacitor/network';
 import { RefreshCw, X, Download } from 'lucide-react';
+import pkg from '../../package.json';
 
 const UpdateManager = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [downloadedBundle, setDownloadedBundle] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     const initializeUpdateLogic = async () => {
@@ -22,7 +25,10 @@ const UpdateManager = () => {
         const current = await CapacitorUpdater.current();
         const latest = await CapacitorUpdater.getLatest({ channel: 'production' });
         
-        if (latest && latest.url && current.version !== latest.version) {
+        const currentVer = (current.version && current.version !== 'builtin') ? current.version : pkg.version;
+        
+        if (latest && latest.url && currentVer !== latest.version) {
+          if (sessionStorage.getItem('skipUpdate') === 'true') return;
           // 4. Download the update in the background
           const bundle = await CapacitorUpdater.download({
             url: latest.url,
@@ -47,6 +53,7 @@ const UpdateManager = () => {
     
     // Resolve the promise to safely store the handle
     CapacitorUpdater.addListener('updateDownloaded', (bundle) => {
+      if (sessionStorage.getItem('skipUpdate') === 'true') return;
       setDownloadedBundle(bundle);
       setShowUpdateModal(true);
     }).then((handle) => {
@@ -60,16 +67,30 @@ const UpdateManager = () => {
 
   const handleUpdateNow = async () => {
     if (!downloadedBundle) return;
+    
+    // The bundle object might be directly the bundle or nested inside { bundle: ... } 
+    // depending on whether it came from .download() or the event listener
+    const updateId = downloadedBundle.id || (downloadedBundle.bundle && downloadedBundle.bundle.id);
+    
+    if (!updateId) {
+      setErrorMsg("Error: Could not find update ID in the downloaded bundle.");
+      return;
+    }
+
+    setIsUpdating(true);
+    setErrorMsg(null);
     try {
       // Apply the update and reload the app
-      await CapacitorUpdater.set({ id: downloadedBundle.id });
+      await CapacitorUpdater.set({ id: updateId });
     } catch (error) {
       console.error('Failed to apply update:', error);
-      setShowUpdateModal(false);
+      setErrorMsg(error.message || 'Failed to apply update');
+      setIsUpdating(false);
     }
   };
 
   const handleUpdateLater = () => {
+    sessionStorage.setItem('skipUpdate', 'true');
     setShowUpdateModal(false);
   };
 
@@ -88,10 +109,16 @@ const UpdateManager = () => {
           Would you like to restart and apply the update now?
         </p>
 
-        <div className="update-modal-actions">
+        <div className="update-modal-actions" style={{ flexWrap: 'wrap' }}>
+          {errorMsg && (
+            <div style={{ width: '100%', color: 'var(--danger-color)', textAlign: 'center', marginBottom: '12px', fontSize: '0.9rem' }}>
+              {errorMsg}
+            </div>
+          )}
           <button 
             className="btn-update btn-update-later" 
             onClick={handleUpdateLater}
+            disabled={isUpdating}
           >
             <X size={20} />
             Not Now
@@ -100,9 +127,11 @@ const UpdateManager = () => {
           <button 
             className="btn-update btn-update-now" 
             onClick={handleUpdateNow}
+            disabled={isUpdating}
+            style={{ opacity: isUpdating ? 0.7 : 1 }}
           >
-            <RefreshCw size={20} />
-            Update Now
+            <RefreshCw size={20} className={isUpdating ? 'spin' : ''} />
+            {isUpdating ? 'Updating...' : 'Update Now'}
           </button>
         </div>
       </div>

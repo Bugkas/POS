@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { CapacitorUpdater } from '@capgo/capacitor-updater';
 import { RefreshCw, Download, CheckCircle2, AlertCircle, Info } from 'lucide-react';
+import pkg from '../../package.json';
 
 export default function UpdateCheck() {
   const [checking, setChecking] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
-  const [currentVersion, setCurrentVersion] = useState('');
+  const [currentVersion, setCurrentVersion] = useState(pkg.version);
   const [status, setStatus] = useState('idle'); // idle, checking, update-available, up-to-date, error
   const [error, setError] = useState(null);
 
@@ -16,10 +17,21 @@ export default function UpdateCheck() {
   const fetchCurrentVersion = async () => {
     try {
       const current = await CapacitorUpdater.current();
-      setCurrentVersion(current.version || 'Unknown');
+      console.log('Current version info:', current);
+      
+      // If we have a real version from Capgo, use it
+      if (current.version && current.version !== 'builtin' && current.version !== 'Unknown') {
+        setCurrentVersion(current.version);
+      } else if (current.bundle && current.bundle.version && current.bundle.version !== 'builtin') {
+        // Handle alternative structure found in some versions/mocks
+        setCurrentVersion(current.bundle.version);
+      } else {
+        // Fallback to package.json version already set in state
+        setCurrentVersion(pkg.version);
+      }
     } catch (err) {
       console.error('Failed to get current version:', err);
-      setCurrentVersion('Unknown');
+      // Keep package.json version as fallback
     }
   };
 
@@ -32,7 +44,9 @@ export default function UpdateCheck() {
       const current = await CapacitorUpdater.current();
       const latest = await CapacitorUpdater.getLatest({ channel: 'production' });
       
-      if (latest && latest.url && current.version !== latest.version) {
+      const currentVer = (current.version && current.version !== 'builtin') ? current.version : pkg.version;
+      
+      if (latest && latest.url && currentVer !== latest.version) {
         setUpdateInfo(latest);
         setStatus('update-available');
       } else {

@@ -74,9 +74,9 @@ export default function InventoryAdmin() {
       </header>
       
       <div className="scrollable-content">
-        {[...INVENTORY_CATEGORIES, { id: 'others', title: 'Others', items: [] }].map(category => {
+        {[...INVENTORY_CATEGORIES, { id: 'uncategorized', title: 'Uncategorized', items: [] }].map(category => {
           let categoryItems = [];
-          if (category.id === 'others') {
+          if (category.id === 'uncategorized') {
             const categorizedItems = new Set(INVENTORY_CATEGORIES.flatMap(c => c.items));
             categoryItems = INGREDIENT_NAMES.filter(item => !categorizedItems.has(item));
           } else {

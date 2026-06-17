@@ -32,7 +32,10 @@ export const PACK_SIZES = {
   "royal-mismo": 12,
   "sprite-mismo": 12,
   "wilkins-500": 24,
-  "minutemaid": 24
+  "minutemaid": 24,
+  "mayo": 24,
+  "catsup": 24,
+  "burger-dressing": 24
 };
 
 export const INVENTORY_CATEGORIES = [
@@ -64,6 +67,6 @@ export const INVENTORY_CATEGORIES = [
   {
     id: "others",
     title: "Others",
-    items: ["siopao", "kimchi", "chiliconcarne"]
+    items: ["siopao", "kimchi", "chiliconcarne", "mayo", "catsup", "burger-dressing"]
   }
 ];
